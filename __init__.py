@@ -10,7 +10,6 @@ class Dispatcher(Resource):
     instead of Resource from twisted.web.resource. This small library lets you
     dispatch with routes in your twisted.web application.
 
-
     Usage:
 
         from twisted.internet import reactor
@@ -22,29 +21,31 @@ class Dispatcher(Resource):
             def index(self, request):
                 return '<html><body>Hello World!</body></html>'
 
-            def docs(self, request):
-                return '<html><body>Docs!</body></html>'
+            def docs(self, request, item):
+                return '<html><body>Docs for %s</body></html>' % item.encode('utf8')
+
+            def post_data(self, request):
+                return '<html><body>OK</body></html>'
 
         c = Controller()
 
         dispatcher = Dispatcher()
+
         dispatcher.connect(name='index', route='/', controller=c, action='index')
+
         dispatcher.connect(name='docs', route='/docs/{item}', controller=c,
                 action='docs')
+
+        dispatcher.connect(name='data', route='/data', controller=c,
+                action='post_data', conditions=dict(method=['POST']))
 
         factory = Site(dispatcher)
         reactor.listenTCP(8000, factory)
         reactor.run()
 
-
     Helpful background information:
     - Python routes: http://routes.groovie.org/
     - Using twisted.web.resources: http://twistedmatrix.com/documents/current/web/howto/web-in-60/dynamic-dispatch.html
-
-
-    Todo:
-    - Support dispatching based on HTTP verbs (GET, POST, etc.)
-    - Support wildcard routes variables getting passed into contoller's handlers
     '''
 
     def __init__(self):
@@ -61,11 +62,31 @@ class Dispatcher(Resource):
 
     def getChild(self, name, request):
         self.__path.append(name)
+
         return self
 
-    def render(self, request):
+    def render_HEAD(self, request):
+        return self.__render('HEAD', request)
+
+    def render_GET(self, request):
+        return self.__render('GET', request)
+
+    def render_POST(self, request):
+        return self.__render('POST', request)
+
+    def render_PUT(self, request):
+        return self.__render('PUT', request)
+
+    def render_DELETE(self, request):
+        return self.__render('DELETE', request)
+
+    def __render(self, method, request):
         try:
-            result = self.__mapper.match('/'.join(self.__path))
+            wsgi_environ = {}
+            wsgi_environ['REQUEST_METHOD'] = method
+            wsgi_environ['PATH_INFO'] = '/'.join(self.__path)
+
+            result = self.__mapper.match(environ=wsgi_environ)
 
             handler = None
 
@@ -74,16 +95,18 @@ class Dispatcher(Resource):
                 controller = self.__controllers.get(controller)
 
                 if controller is not None:
+                    del result['controller']
                     action = result.get('action', None)
 
                     if action is not None:
+                        del result['action']
                         handler = getattr(controller, action, None)
 
         finally:
             self.__path = ['']
 
         if handler:
-            return handler(request)
+            return handler(request, **result)
         else:
             request.setResponseCode(404)
             return '<html><head><title>404 Not Found</title></head>' \
@@ -114,15 +137,23 @@ if __name__ == '__main__':
         def index(self, request):
             return '<html><body>Hello World!</body></html>'
 
-        def docs(self, request):
-            return '<html><body>Docs!</body></html>'
+        def docs(self, request, item):
+            return '<html><body>Docs for %s</body></html>' % item.encode('utf8')
+
+        def post_data(self, request):
+            return '<html><body>OK</body></html>'
 
     c = Controller()
 
     dispatcher = Dispatcher()
+
     dispatcher.connect(name='index', route='/', controller=c, action='index')
+
     dispatcher.connect(name='docs', route='/docs/{item}', controller=c,
             action='docs')
+
+    dispatcher.connect(name='data', route='/data', controller=c,
+            action='post_data', conditions=dict(method=['POST']))
 
     factory = Site(dispatcher)
     reactor.listenTCP(8000, factory)
