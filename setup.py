@@ -1,7 +1,7 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='txroutes',
-        version='0.0.1',
+        version='0.0.2',
         author='Zach Steindler',
         author_email='steiza@coffeehousecoders.org',
         url='http://github.com/steiza/txroutes',
@@ -12,6 +12,6 @@ setup(name='txroutes',
         license='BSD',
         packages=['txroutes'],
         package_data={'txroutes': ['*']},
-        requirements=['Mako'],
+        install_requires=['routes', 'twisted'],
         )
 
