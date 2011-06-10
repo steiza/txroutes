@@ -47,10 +47,11 @@ class Dispatcher(Resource):
     - Python routes: http://routes.groovie.org/
     - Using twisted.web.resources: http://twistedmatrix.com/documents/current/web/howto/web-in-60/dynamic-dispatch.html
     '''
-    isLeaf = True
 
     def __init__(self):
         Resource.__init__(self)
+
+        self.__path = ['']
 
         self.__controllers = {}
         self.__mapper = routes.Mapper()
@@ -58,6 +59,11 @@ class Dispatcher(Resource):
     def connect(self, name, route, controller, **kwargs):
         self.__controllers[name] = controller
         self.__mapper.connect(name, route, controller=name, **kwargs)
+
+    def getChild(self, name, request):
+        self.__path.append(name)
+
+        return self
 
     def render_HEAD(self, request):
         return self.__render('HEAD', request)
@@ -75,28 +81,32 @@ class Dispatcher(Resource):
         return self.__render('DELETE', request)
 
     def __render(self, method, request):
-        wsgi_environ = {}
-        wsgi_environ['REQUEST_METHOD'] = method
-        wsgi_environ['PATH_INFO'] = '/' + '/'.join(request.postpath)
+        try:
+            wsgi_environ = {}
+            wsgi_environ['REQUEST_METHOD'] = method
+            wsgi_environ['PATH_INFO'] = '/'.join(self.__path)
 
-        result = self.__mapper.match(environ=wsgi_environ)
+            result = self.__mapper.match(environ=wsgi_environ)
 
-        handler = None
+            handler = None
 
-        if result is not None:
-            controller = result.get('controller', None)
-            controller = self.__controllers.get(controller)
+            if result is not None:
+                controller = result.get('controller', None)
+                controller = self.__controllers.get(controller)
 
-            if controller is not None:
-                del result['controller']
-                action = result.get('action', None)
+                if controller is not None:
+                    del result['controller']
+                    action = result.get('action', None)
 
-                if action is not None:
-                    del result['action']
-                    handler = getattr(controller, action, None)
+                    if action is not None:
+                        del result['action']
+                        handler = getattr(controller, action, None)
+
+        finally:
+            self.__path = ['']
 
         if handler:
-            return handler(request, **result)
+            return handler(request, **result).encode('utf8')
         else:
             request.setResponseCode(404)
             return '<html><head><title>404 Not Found</title></head>' \
