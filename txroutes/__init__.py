@@ -12,8 +12,8 @@ class Dispatcher(Resource):
 
     Usage:
 
-        from twisted.internet import reactor
-        from twisted.web.server import Site
+        from twisted.internet import reactor, task
+        from twisted.web.server import Site, NOT_DONE_YET
 
         # Create a Controller
         class Controller(object):
@@ -27,6 +27,12 @@ class Dispatcher(Resource):
             def post_data(self, request):
                 return '<html><body>OK</body></html>'
 
+            def deferred_example(self, request):
+                request.write('<html><body>Wait a tic...</body></html>')
+                task.deferLater(reactor, 5, lambda: request.finish())
+
+                return NOT_DONE_YET
+
         c = Controller()
 
         dispatcher = Dispatcher()
@@ -38,6 +44,9 @@ class Dispatcher(Resource):
 
         dispatcher.connect(name='data', route='/data', controller=c,
                 action='post_data', conditions=dict(method=['POST']))
+
+        dispatcher.connect(name='deferred_example', route='/wait', controller=c,
+                action='deferred_example')
 
         factory = Site(dispatcher)
         reactor.listenTCP(8000, factory)
@@ -106,7 +115,7 @@ class Dispatcher(Resource):
             self.__path = ['']
 
         if handler:
-            return handler(request, **result).encode('utf8')
+            return handler(request, **result)
         else:
             request.setResponseCode(404)
             return '<html><head><title>404 Not Found</title></head>' \
@@ -117,8 +126,8 @@ if __name__ == '__main__':
     import logging
 
     import twisted.python.log
-    from twisted.internet import reactor
-    from twisted.web.server import Site
+    from twisted.internet import reactor, task
+    from twisted.web.server import Site, NOT_DONE_YET
 
     # Set up logging
     log = logging.getLogger('twisted_routes')
@@ -143,6 +152,12 @@ if __name__ == '__main__':
         def post_data(self, request):
             return '<html><body>OK</body></html>'
 
+        def deferred_example(self, request):
+            request.write('<html><body>Wait a tic...</body></html>')
+            task.deferLater(reactor, 5, lambda: request.finish())
+
+            return NOT_DONE_YET
+
     c = Controller()
 
     dispatcher = Dispatcher()
@@ -154,6 +169,9 @@ if __name__ == '__main__':
 
     dispatcher.connect(name='data', route='/data', controller=c,
             action='post_data', conditions=dict(method=['POST']))
+
+    dispatcher.connect(name='deferred_example', route='/wait', controller=c,
+            action='deferred_example')
 
     factory = Site(dispatcher)
     reactor.listenTCP(8000, factory)
