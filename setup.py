@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='txroutes',
-        version='0.0.2',
+        version='0.0.3',
         author='Zach Steindler',
         author_email='steiza@coffeehousecoders.org',
         url='http://github.com/steiza/txroutes',
