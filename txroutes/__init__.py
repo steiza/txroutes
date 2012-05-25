@@ -15,6 +15,9 @@ class Dispatcher(Resource):
         from twisted.internet import reactor, task
         from twisted.web.server import Site, NOT_DONE_YET
 
+        from txroutes import Dispatcher
+
+
         # Create a Controller
         class Controller(object):
 
