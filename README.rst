@@ -1,10 +1,17 @@
-Provides routes-like dispatching for twisted.web.server.
+txroutes
+========
+
+txroutes provides routes-like dispatching for twisted.web.server (it actually
+depends upon the Python routes codebase).
 
 Frequently, it's much easier to describe your website layout using routes
 instead of Resource from twisted.web.resource. This small library lets you
 dispatch with routes in your twisted.web application.
 
-Usage:
+Usage
+-----
+
+Here is an example of how to use txroutes::
 
     from twisted.internet import reactor, task
     from twisted.web.server import Site, NOT_DONE_YET
@@ -46,6 +53,8 @@ Usage:
     reactor.listenTCP(8000, factory)
     reactor.run()
 
-Helpful background information:
+
+Additional Information
+----------------------
 - Python routes: http://routes.groovie.org/
 - Using twisted.web.resources: http://twistedmatrix.com/documents/current/web/howto/web-in-60/dynamic-dispatch.html
