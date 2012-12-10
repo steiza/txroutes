@@ -58,9 +58,11 @@ Here is an example of how to use txroutes::
 
 License
 -------
-txroutes is released under the [MIT License](http://opensource.org/licenses/MIT)
+txroutes is released under the `MIT License`__
+
+__ http://opensource.org/licenses/MIT
 
 Additional Information
 ----------------------
-- [Python routes](http://routes.groovie.org/)
-- [Using twisted.web.resources](http://twistedmatrix.com/documents/current/web/howto/web-in-60/dynamic-dispatch.html)
+- Python routes: http://routes.groovie.org/
+- Using twisted.web.resources: http://twistedmatrix.com/documents/current/web/howto/web-in-60/dynamic-dispatch.html
