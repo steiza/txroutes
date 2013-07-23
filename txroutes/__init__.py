@@ -63,8 +63,6 @@ class Dispatcher(Resource):
     def __init__(self):
         Resource.__init__(self)
 
-        self.__path = ['']
-
         self.__controllers = {}
         self.__mapper = routes.Mapper()
 
@@ -91,29 +89,26 @@ class Dispatcher(Resource):
         return self.__render('DELETE', request)
 
     def __render(self, method, request):
-        try:
-            wsgi_environ = {}
-            wsgi_environ['REQUEST_METHOD'] = method
-            wsgi_environ['PATH_INFO'] = request.path
 
-            result = self.__mapper.match(environ=wsgi_environ)
+        wsgi_environ = {}
+        wsgi_environ['REQUEST_METHOD'] = method
+        wsgi_environ['PATH_INFO'] = request.path
 
-            handler = None
+        result = self.__mapper.match(environ=wsgi_environ)
 
-            if result is not None:
-                controller = result.get('controller', None)
-                controller = self.__controllers.get(controller)
+        handler = None
 
-                if controller is not None:
-                    del result['controller']
-                    action = result.get('action', None)
+        if result is not None:
+            controller = result.get('controller', None)
+            controller = self.__controllers.get(controller)
 
-                    if action is not None:
-                        del result['action']
-                        handler = getattr(controller, action, None)
+            if controller is not None:
+                del result['controller']
+                action = result.get('action', None)
 
-        finally:
-            self.__path = ['']
+                if action is not None:
+                    del result['action']
+                    handler = getattr(controller, action, None)
 
         if handler:
             return handler(request, **result)
