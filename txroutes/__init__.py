@@ -73,8 +73,6 @@ class Dispatcher(Resource):
         self.__mapper.connect(name, route, controller=name, **kwargs)
 
     def getChild(self, name, request):
-        self.__path.append(name)
-
         return self
 
     def render_HEAD(self, request):
@@ -96,7 +94,7 @@ class Dispatcher(Resource):
         try:
             wsgi_environ = {}
             wsgi_environ['REQUEST_METHOD'] = method
-            wsgi_environ['PATH_INFO'] = '/'.join(self.__path)
+            wsgi_environ['PATH_INFO'] = request.path
 
             result = self.__mapper.match(environ=wsgi_environ)
 
