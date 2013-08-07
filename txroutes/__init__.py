@@ -73,25 +73,10 @@ class Dispatcher(Resource):
     def getChild(self, name, request):
         return self
 
-    def render_HEAD(self, request):
-        return self.__render('HEAD', request)
-
-    def render_GET(self, request):
-        return self.__render('GET', request)
-
-    def render_POST(self, request):
-        return self.__render('POST', request)
-
-    def render_PUT(self, request):
-        return self.__render('PUT', request)
-
-    def render_DELETE(self, request):
-        return self.__render('DELETE', request)
-
-    def __render(self, method, request):
+    def render(self, request):
 
         wsgi_environ = {}
-        wsgi_environ['REQUEST_METHOD'] = method
+        wsgi_environ['REQUEST_METHOD'] = request.method
         wsgi_environ['PATH_INFO'] = request.path
 
         result = self.__mapper.match(environ=wsgi_environ)
