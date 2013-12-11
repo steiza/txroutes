@@ -1,3 +1,10 @@
+Note
+====
+
+This is a legacy project! For the most up-to-date version check out: https://github.com/olark/txroutes
+
+
+
 txroutes
 ========
 
