@@ -98,9 +98,12 @@ class Dispatcher(Resource):
         if handler:
             return handler(request, **result)
         else:
-            request.setResponseCode(404)
-            return '<html><head><title>404 Not Found</title></head>' \
-                    '<body><h1>Not found</h1></body></html>'
+            return self._render_404()
+
+    def _render_404(self):
+        request.setResponseCode(404)
+        return '<html><head><title>404 Not Found</title></head>' \
+                '<body><h1>Not found</h1></body></html>'
 
 
 if __name__ == '__main__':
